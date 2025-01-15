@@ -1,5 +1,9 @@
 ---
 # HTTPS certificate getter
+- name: Install python3-cryptography package for self-signed certs and keys
+  ansible.builtin.dnf:
+    name: python3-cryptography
+    state: latest
 
 - name: Run a separate role to install the HTTPS certificate
   include_role:
@@ -17,7 +21,7 @@
     certbot_auto_renew: false
     # This is necessary until https://github.com/geerlingguy/ansible-role-certbot/issues/105 gets fixed.
     ansible_become: yes
-  when: matomo_protocol == "https"
+  when: 'matomo_protocol == "https" and "local" not in matomo_domain'
 
 - name: Disable Nginx during certificate renewals
   ansible.builtin.lineinfile:
@@ -28,4 +32,36 @@
     - 'pre_hook = service nginx stop'
     - 'post_hook = service nginx start'
   become: yes
-  when: matomo_protocol == "https"
+  when: 'matomo_protocol == "https" and "local" not in matomo_domain'
+
+- name: Create configuration directory for Matomo
+  file:
+    path: "{{ matomo_path['config'] }}"
+    state: directory
+    mode: '0755'
+  when: 'matomo_protocol == "https" and "local" in matomo_domain'
+
+- name: Create the directory for private key for noggin web server
+  ansible.builtin.file:
+    dest: "{{ matomo_path['pkey_dir'] }}"
+    state: directory
+    mode: 0700
+  when: matomo_protocol == "https" and "'local' in matomo_domain"
+
+- name: Create private key (RSA, 4096 bits) for noggin
+  community.crypto.openssl_privatekey:
+    path: '{{matomo_path["pkey_dir"] }}/{{ matomo_pkey }}'
+    type: RSA
+    size: 4096
+    state: present
+    mode: 0700
+  when: 'matomo_protocol == "https" and "local" in matomo_domain'
+
+- name: Create simple self-signed certificate for noggin
+  community.crypto.x509_certificate:
+    path: '{{matomo_path["cert_dir"] }}/{{ matomo_cert }}'
+    privatekey_path: '{{matomo_path["pkey_dir"] }}/{{ matomo_pkey }}'
+    provider: selfsigned
+    state: present
+  when: 'matomo_protocol == "https" and "local" in matomo_domain'
+...

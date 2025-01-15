@@ -1,71 +1,22 @@
 ---
 # Web server configurator
+- name: retrieve the content of a specific file
+  ansible.builtin.slurp:
+    src: /etc/php-fpm.d/www.conf
+  register: php_fpm_www
 
-- name: Fetch the (possibly empty) list of PHP socket files
-  find:
-    paths: /var/run/php
-    patterns: "*.sock"
-    file_type: any
-  register: matomo_php_socket_files
-
-- name: Fetch the path of the first found socket file
-  set_fact:
-    matomo_php_socket_file_path: "{{ matomo_php_socket_files.files | sort(attribute='ctime', reverse=True) | map(attribute='path') | list | first }}"
-  when: matomo_php_socket_files.matched > 0
-
-- name: Fetch info on the found socket file
-  ansible.builtin.stat:
-    path: "{{ matomo_php_socket_file_path }}"
-  register: matomo_php_socket_files_first
-  when: matomo_php_socket_files.matched > 0
-
-- name: Assume the PHP socket file is not a symbolic link
-  set_fact:
-    matomo_php_socket_file_is_link: false
-  when: matomo_php_socket_files.matched > 0
-
-- name: Determine if the socket file is a symbolic link
-  set_fact:
-    matomo_php_socket_file_is_link: true
-  when:
-    - matomo_php_socket_files.matched > 0
-    - matomo_php_socket_files_first.stat.islnk is defined
-    - matomo_php_socket_files_first.stat.islnk
-
-- name: Determine if the symbolic link points to a real file
-  ansible.builtin.stat:
-    path: "{{ matomo_php_socket_files_first.stat.lnk_source }}"
-  register: matomo_php_socket_file_link_target
-  when: (matomo_php_socket_files.matched > 0) and matomo_php_socket_file_is_link
-
-- name: Set the PHP socket file if it's a symbolic link and the target exists
-  set_fact:
-    matomo_php_socket_file: "{{ matomo_php_socket_files_first.stat.lnk_source }}"
-  when:
-    - matomo_php_socket_files.matched > 0
-    - matomo_php_socket_file_is_link
-    - matomo_php_socket_file_link_target.stat.exists
-
-- name: Set the PHP socket file if it's a regular file
-  set_fact:
-    matomo_php_socket_file: "{{ matomo_php_socket_file_path }}"
-  when: (matomo_php_socket_files.matched > 0) and (not matomo_php_socket_file_is_link)
+- name: php-fpm unix socket
+  ansible.builtin.set_fact:
+    matomo_php_socket_file: "{{ php_fpm_www['content']|b64decode|regex_findall('^listen = (.+)',multiline=True)|first }}"
 
 - name: Inject the Matomo site's Nginx configuration
-  template:
+  ansible.builtin.template:
     src: "matomo.conf.j2"
-    dest: "{{ matomo_web_config_dir['available'] }}/matomo.conf"
+    dest: "{{ matomo_web_config_dir['conf_dir'] }}/matomo.conf"
     owner: "root"
     group: "root"
     mode: "preserve"
     force: true
-  notify: "(Handler: All OSs) Reload NGINX"
-  become: true
-
-- name: Enable the site
-  file:
-    src: "{{ matomo_web_config_file['regular'] }}"
-    dest: "{{ matomo_web_config_file['link'] }}"
-    state: link
+    backup: yes
   notify: "(Handler: All OSs) Reload NGINX"
   become: true

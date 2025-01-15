@@ -1,0 +1,40 @@
+---
+- name: download matomo zip package
+  ansible.builtin.get_url:
+    url: '{{ matomo_src_base_url }}/{{ matomo_src_package }}'
+    dest: '{{ matomo_tarball_local_dir }}/{{ matomo_src_package }}'
+    backup: yes
+
+- name: extract downloaded {{ matomo_src_package }}
+  ansible.builtin.unarchive:
+    src: '{{ matomo_tarball_local_dir }}/{{ matomo_src_package }}'
+    dest: '{{ matomo_path["docroot"] }}'
+    remote_src: True
+    owner: '{{ php_fpm["proc_user"] }}'
+    group: '{{ php_fpm["proc_group"] }}'
+
+- name: verify if we have to proceed with the matomo initial setup
+  ansible.builtin.get_url:
+
+# STEP 1
+# Get url http:://{[ matomo_domain }} se contiene la stringa installation-progress allora imposta che ev
+# If login page is not retrieved then mantisbt is not installed
+- name: Retrieve Setup page
+  ansible.builtin.uri:
+    url: '{{ matomo_protocol }}://{{ matomo_domain}}'
+    follow_redirects: safe
+    force: true
+    method: GET
+    return_content: true
+  register: setup_page
+
+- name: Retrieve Login page
+  ansible.builtin.uri:
+    url: '{{ matomo_protocol }}://{{ matomo_domain}}'
+    follow_redirects: safe
+    force: true
+    method: GET
+    return_content: true
+  register: setup_page
+  when: "'installation-progress' in setup_page"
+...

@@ -1,15 +1,40 @@
 ---
 # defaults file for ansible-role-matomo
+# Php verion
+matomo_php_version: 8.2
+
+# Web server
+webserver:
+  package: nginx
+  proc_user: nginx
+  proc_group: nginx
+  web_service_name: nginx
+  web_service_ports:    #Used by firewalld rule
+    - http
+    - https
+php_fpm:
+  proc_user: apache
+  proc_group: apache
+
+# DB Server
+dbserver: mysql-server
+dbclient: mysql
+dbserver_service: mysqld
+
+# Matomo source package
+matomo_src_base_url: https://builds.matomo.org
+matomo_src_package: matomo-latest.zip
+matomo_tarball_local_dir: /opt
 
 # Architecture
 matomo_max_int: "{{ (ansible_userspace_bits == '64') | ternary('9223372036854775807', '2147483647') }}"
 
 # General
-matomo_domain: "matomo.example.com"
+matomo_domain: "matomo.lab.local"
 matomo_protocol: "https"
 matomo_url: "{{ matomo_protocol }}://{{ matomo_domain }}/"
 matomo_timezone: "America/Toronto"
-matomo_https_certificate_admin_email: "tech@example.com"
+matomo_https_certificate_admin_email: "lucecca@yahoo.it"
 
 # Software sources
 matomo_debian_repository_domain: "debian.matomo.org"
@@ -20,9 +45,14 @@ matomo_debian_automatic_upgrades: "true"
 
 # Paths
 matomo_path:
-  docroot: "/usr/share/matomo"
+  docroot: "/var/www/html"
+  docroot_app: "/var/www/html/matomo"
   config: "/etc/matomo"
   temporary: "/tmp"
+  pkey_dir: "/etc/matomo/private-key"
+  cert_dir: "/etc/matomo"
+matomo_pkey: matomo-selfsigned.key
+matomo_cert: matomo-selfsigned.crt
 matomo_geoip_data_month: "{{ ansible_date_time.year }}-{{ ansible_date_time.month }}"
 matomo_geoip_data_filename: "dbip-city-lite-{{ matomo_geoip_data_month }}.mmdb"
 matomo_geoip_data_compressed: "{{ matomo_geoip_data_filename }}.gz"
@@ -32,11 +62,9 @@ matomo_geoip_data_url: "https://download.db-ip.com/free/{{ matomo_geoip_data_com
 matomo_configure_web_server: true
 matomo_web_config_dir_main: "/etc/nginx"
 matomo_web_config_dir:
-  available: "{{ matomo_web_config_dir_main }}/sites-available"
-  enabled: "{{ matomo_web_config_dir_main }}/sites-enabled"
+  conf_dir: "{{ matomo_web_config_dir_main }}/conf.d"
 matomo_web_config_file:
-  regular: "{{ matomo_web_config_dir['available'] }}/matomo.conf"
-  link: "{{ matomo_web_config_dir['enabled'] }}/matomo.conf"
+  conf_file: "{{ matomo_web_config_dir['conf_dir'] }}/matomo.conf"
 
 # Database
 matomo_db_server: "{{ inventory_hostname }}"
@@ -44,6 +72,7 @@ matomo_db:
   host: "{{ (matomo_db_server == inventory_hostname) | ternary('127.0.0.1', matomo_db_server) }}"
   name: "matomo"
   user: "matomo"
+  password: "matomo"
   table_prefix: ""
 
 # Salts

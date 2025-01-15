@@ -1,24 +1,48 @@
 ---
 # tasks file for ansible-role-matomo
 
-- name: Download required roles
-  local_action: command ansible-galaxy install --ignore-errors -r {{ role_path }}/roles/requirements.yml
+#- name: Download required roles
+#  local_action: command ansible-galaxy install --ignore-errors -r {{ role_path }}/roles/requirements.yml
+- name: include os specific vars
+  ansible.builtin.include_tasks:
+    file: include_vars.yml
+
+- name: setup environment for RedHat based os
+  ansible.builtin.import_tasks:
+    file: setup-RedHat.yml
+  when: ansible_os_family == 'RedHat'
+
+- name: install web server and needed compoent
+  ansible.builtin.import_tasks:
+    file: matomo_install_web_server.yml
 
 - name: Configure the Web server
-  import_tasks: configure-web-server.yml
+  ansible.builtin.import_tasks:
+    file: configure-web-server.yml
   when: matomo_configure_web_server | bool
 
 - name: Get an HTTPS certificate
-  import_tasks: get-https-certificate.yml
+  ansible.builtin.import_tasks:
+    file: get-https-certificate.yml
 
-- name: Configure the application
-  import_tasks: configure-application.yml
+- name: install database server
+  ansible.builtin.import_tasks:
+    file: matomo_install_db_server.yml
 
 - name: Create the application's database
-  import_tasks: create-database.yml
+  ansible.builtin.import_tasks:
+    file: create-database.yml
 
-- name: Install the Debian package
-  import_tasks: install-debian-package.yml
+- name: Installa matomo web application
+  ansible.builtin.import_tasks:
+    file: matomo_install_web_app.yml
+#TODO INSERIRE GLI STEP NECESSARI PER EFFETTUARE TRAMITE METODO URI LA CONFIGURAZIONE
+#- name: Configure the application
+#  ansible.builtin.import_tasks:
+#    file: configure-application.yml
 
-- name: Add additional functionality to the basic Matomo
-  import_tasks: add-extras.yml
+#- name: Install the Debian package
+#  ansible.builtin.import_tasks: install-debian-package.yml
+
+#- name: Add additional functionality to the basic Matomo
+#  ansible.builtin.import_tasks: add-extras.yml
