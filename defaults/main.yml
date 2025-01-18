@@ -74,6 +74,8 @@ matomo_db:
   user: "matomo"
   password: "matomo"
   table_prefix: ""
+  adapter: "PDO\\MYSQL"
+  schema: "Mysql"
 
 # Salts
 matomo_salt: "{{ lookup('vars', 'matomo_max_int') | random | to_uuid | hash('sha512') }}"
@@ -90,7 +92,7 @@ matomo_hosted_site:
 matomo_hosted_site_name: "Example"
 
 # Superuser
-matomo_superuser_password: "{{ lookup('password', '/dev/null length=20 chars=ascii_letters') }}"
+matomo_superuser_password: "matomoadm"
 matomo_superuser_email: "operations@example.com"
 matomo_superuser_name: "admin"
 matomo_superuser_alias: "{{ matomo_superuser_name }}"

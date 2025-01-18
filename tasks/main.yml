@@ -36,13 +36,4 @@
 - name: Installa matomo web application
   ansible.builtin.import_tasks:
     file: matomo_install_web_app.yml
-#TODO INSERIRE GLI STEP NECESSARI PER EFFETTUARE TRAMITE METODO URI LA CONFIGURAZIONE
-#- name: Configure the application
-#  ansible.builtin.import_tasks:
-#    file: configure-application.yml
 
-#- name: Install the Debian package
-#  ansible.builtin.import_tasks: install-debian-package.yml
-
-#- name: Add additional functionality to the basic Matomo
-#  ansible.builtin.import_tasks: add-extras.yml
