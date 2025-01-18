@@ -77,4 +77,4 @@ GNU AGPLv3
 Author Information
 ------------------
 
-Written by [Colan Schwartz](https://consensus.enterprises/team/colan/) and other folks at [Consensus Enterprises](https://consensus.enterprises/).  To contact us, please use our [Web contact form](https://consensus.enterprises/#contact).
+Written by me Luca Ceccarani based on Consensus work
