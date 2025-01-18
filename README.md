@@ -1,34 +1,26 @@
-Consensus Enterprises' Matomo
+MATOMO
 =============================
 
-Consensus Enterprises' Ansible role for provisioning Matomo (formerly known as "Piwik").
+This role is a fork from Consensus Enterprises' Matomo role and has been adequate for RedHat based os.
+T
 
 Overview
 --------
 
-This role does the following:
-
-1. Adds an Nginx site configuration.
-1. Gets an HTTPS certificate (if HTTPS support is enabled).
-1. Adds a configuration file for the application.
-1. Creates and populates the application's database.
-1. Installs the Debian package, automatically updating the database if the template is too old.
-1. Installs the recommended GeoIP data file, which can be enabled in the application's settings.
+TO BE UPDATED
 
 Requirements
 ------------
 
-* A Debian-based OS (e.g. Ubuntu)
+* A RedHat OS (e.g. Almalinux, Rocky)
 * The Nginx Web server
 * MySQL (version 5.5 or greater) or MariaDB
-* A DNS record pointing to the instance (e.g. `matomo.example.com`)
 
-We'd be happy to include support for other operating systems, Web servers or anything else.  Patches welcome!
+TO BE UPDATED
 
 Role Variables
 --------------
-
-See [defaults/main.yml](https://gitlab.com/consensus.enterprises/ansible-roles/ansible-role-matomo/blob/master/defaults/main.yml) for all role variables.
+TO BE UPDATED
 
 Dependencies
 ------------
@@ -39,8 +31,12 @@ Dependencies
 
 See the [default variables used](https://gitlab.com/consensus.enterprises/ansible-roles/ansible-role-matomo/blob/master/tasks/get-https-certificate.yml) when calling it.
 
+geerlingguy.repo-epel
+
 Example Playbook
 ----------------
+
+TO BE UPDATED
 
 ```yaml
 - hosts: servers
